@@ -19,10 +19,9 @@ spec:
       containers:
       - name: nginx-waf
         image: docker.io/library/nginx:latest
-        # - args:
-        #   - nginx
-        #   - -g
-        #   - daemon off;
+        # args:
+        # - ls
+        # - -la
         env:
         - name: ADMIN_NAME
           value: Joseba
@@ -33,11 +32,18 @@ spec:
           hostPort: 8080
         volumeMounts:
         - mountPath: /etc/nginx/nginx.conf
-          name: nginx-waf_nginx-conf
+          name: nginx-waf_nginx-conf-file
+          readOnly: true
+        - mountPath: /etc/nginx/conf.d
+          name: nginx-waf_nginx-conf-dir
           readOnly: true
       volumes:
       - hostPath:
-          path: ./nginx.conf
+          path: ./deployments/nginx-waf/cnt-fs/etc/nginx/nginx.conf
           type: File
-        name: nginx-waf_nginx-conf
+        name: nginx-waf_nginx-conf-file
+      - hostPath:
+          path: ./deployments/nginx-waf/cnt-fs/etc/nginx/conf.d
+          type: Directory
+        name: nginx-waf_nginx-conf-dir
 
