@@ -1,0 +1,7 @@
+---
+ansible_user: ubuntu
+ansible_port: 666
+ansible_ssh_private_key_file: ~/.ssh/id_ed25519_izaro.otzarri.net
+# k3s_version: v1.22.3+k3s1
+# systemd_dir: /etc/systemd/system
+# master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"

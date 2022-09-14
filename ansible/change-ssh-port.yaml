@@ -1,0 +1,30 @@
+---
+
+- name: Change SSH port in cluster members
+  hosts: oci_host
+  gather_facts: no
+  become: yes
+  tasks:
+
+  - name: Save new ansible port
+    set_fact:
+      new_ansible_port: "{{ ansible_port }}"
+
+  - name: Use port 22 for SSH connections
+    set_fact:
+      ansible_port: 22
+
+  - name: Change SSH server port in cluster member
+    lineinfile:
+      dest: "/etc/ssh/sshd_config"
+      regexp: "^Port"
+      line: "Port {{ new_ansible_port }}"
+
+  - name: Restart sshd
+    service:
+      name: sshd
+      state: restarted
+
+  - name: Use custom port for SSH connections
+    set_fact:
+      ansible_port: "{{ new_ansible_port }}"

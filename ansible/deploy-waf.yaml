@@ -1,0 +1,8 @@
+---
+
+- name: Deploy WAF
+  hosts: oci_host
+  gather_facts: no
+  become: no
+  roles:
+  - role: deployments/nginx-waf

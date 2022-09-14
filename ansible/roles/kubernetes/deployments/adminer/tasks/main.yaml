@@ -1,0 +1,12 @@
+---
+
+- name: "Get secret: mysql"
+  set_fact:
+    secret: "{{ query('kubernetes.core.k8s', kind='Secret', namespace='default', resource_name='mysql') }}"
+
+- name:  Get MySQL root password
+  set_fact:
+    mysql_root_password: "{{ secret[0]['data']['mysql-root-password'] }}"
+
+- debug:
+    msg: "{{ mysql_root_password }}"

@@ -1,0 +1,39 @@
+---
+
+- name: Copy the kube file to the OCI host
+  ansible.builtin.copy:
+    src: ../kube-file.yaml
+    dest: ./kube-file.yaml
+    remote_src: no
+    validate: /usr/bin/ls %s
+
+- name: Copy nginx.conf file to the OCI host
+  ansible.builtin.copy:
+    src: ../nginx.conf
+    dest: ./nginx.conf
+
+- name: Deploy nginx-waf
+  containers.podman.podman_play:
+    kube_file: ./kube-file.yaml
+    recreate: true
+    state: started
+
+- name: Remove the kube file
+  ansible.builtin.file:
+    path: /etc/foo.txt
+    state: absent
+
+# - name: "Pull nginx image"
+  # containers.podman.podman_image:
+#     name: docker.io/nginx
+# - name: "Deploy nginx image for waf"
+  # containers.podman.podman_container:
+  #   name: nginx-waf
+  #   image: docker.io/nginx
+  #   state: started
+  #   detach: true
+  #   rm: true
+  #   exposed_ports:
+  #   - 80
+  #   ports:
+#     - 8080:80

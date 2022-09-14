@@ -1,0 +1,5 @@
+---
+
+# TODO: Check if that collection exists before adding the new one
+- name: "Install Ansible collection: containers.podman"
+  shell: "ansible-galaxy collection install containers.podman"

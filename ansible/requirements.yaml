@@ -1,0 +1,5 @@
+# Required collections and roles are defined here.
+# Install them with the command below:
+#     $ ansible-galaxy install -r requirements.yml
+collections:
+  - name: containers.podman

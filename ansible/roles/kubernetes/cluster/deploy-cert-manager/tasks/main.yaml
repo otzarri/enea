@@ -1,0 +1,28 @@
+---
+
+- name: Create temporary directory
+  tempfile:
+    state: directory
+  register: tmp_dir
+
+- name: Get temporary directory path
+  set_fact:
+    tmp_dir: "{{ tmp_dir.path }}"
+
+- name: Get cert-manager manifest file
+  get_url:
+    url: https://github.com/cert-manager/cert-manager/releases/download/v1.8.2/cert-manager.yaml
+    dest: "{{ tmp_dir }}/cert-manager.yaml"
+
+- name: Deploy cert-manager
+  local_action:
+    module: k8s
+    name: cert-manager
+    src: "{{ tmp_dir }}/cert-manager.yaml"
+    state: present
+
+- name: Remove temporary directory
+  file:
+    state: absent
+    path: "{{ tmp_dir }}"
+

@@ -1,0 +1,72 @@
+---
+
+- name: Check if k3s is installed
+  delegate_to: "{{ groups['master'][0] }}"
+  shell: "which k3s | wc -l"
+  register: is_installed
+  ignore_errors: yes
+
+- block:
+
+  - name: Create temporary directory
+    tempfile:
+      state: directory
+    register: tmp_dir
+
+  - name: Store only temporary directory path
+    set_fact:
+      tmp_dir: "{{ tmp_dir.path }}"
+
+  - name: Calculate path of k3s-ansible
+    set_fact:
+      k3sa: "{{ tmp_dir }}/k3s-ansible"
+
+  - name: Download k3s-ansible
+    git:
+      repo: https://github.com/k3s-io/k3s-ansible
+      dest: "{{ k3sa }}"
+      clone: yes
+      update: no
+
+  - name: "Info"
+    debug:
+      msg:
+        - k3s is being installed in background mode.
+        - Installation messages won't appear until this process ends.
+        - Please, wait some minutes while 'k3s installation' task ends.
+
+  - name: "k3s installation"
+    shell:
+      cmd: "ansible-playbook {{ tmp_dir }}/k3s-ansible/site.yml -i ./inventory/hosts.ini"
+    register: output
+
+  - name: "k3s installation output"
+    debug:
+      var: output.stdout_lines
+
+  - name: Copy kubeconfig from master to localhost
+    delegate_to: "{{ groups['master'][0] }}"
+    become: yes
+    fetch:
+      src: /etc/rancher/k3s/k3s.yaml
+      dest: "~/.kube/config-{{ groups['master'][0] }}.yaml"
+      flat: yes
+
+  - name: Set master's public address in kubeconfig
+    replace:
+      path: "~/.kube/config-{{ groups['master'][0] }}.yaml"
+      regexp: '127.0.0.1'
+      replace: "{{ groups['master'][0] }}"
+      backup: no
+
+  - name: Change file ownership, group and permissions
+    file:
+      path: "~/.kube/config-{{ groups['master'][0] }}.yaml"
+      mode: '0600'
+
+  - name: Remove temporary directory
+    file:
+      state: absent
+      path: "{{ tmp_dir }}"
+
+  when: is_installed.stdout == "0"

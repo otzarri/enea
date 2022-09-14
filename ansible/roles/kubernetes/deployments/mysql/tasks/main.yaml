@@ -1,0 +1,33 @@
+---
+
+- name: Set if present or absent
+  set_fact:
+    state: present
+
+- name: "Add Helm repository: Bitnami"
+  kubernetes.core.helm_repository:
+      name: bitnami
+      repo_url: https://charts.bitnami.com/bitnami
+
+- name: Read values.yaml
+  set_fact:
+    values: "{{lookup('ansible.builtin.file', './values.yaml') | from_yaml }}"
+
+- name: "Create namespace: mariadb"
+  k8s:
+    name: mariadb
+    kind: Namespace
+    state: "{{ state }}"
+
+- name: Install mariadb chart
+  kubernetes.core.helm:
+    name: mariadb
+    namespace: mariadb
+    chart_ref: bitnami/mariadb
+    release_values: "{{ values }}"
+    state: "{{ state }}"
+  register: result
+
+- name: Helm chart result
+  debug:
+    msg: "{{ result.stdout_lines }}"

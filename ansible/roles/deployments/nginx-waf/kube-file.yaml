@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-waf
+  labels:
+    app: nginx-waf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-waf
+  template:
+    metadata:
+      labels:
+        app: nginx-waf
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: nginx-waf
+        image: docker.io/library/nginx:latest
+        # - args:
+        #   - nginx
+        #   - -g
+        #   - daemon off;
+        env:
+        - name: ADMIN_NAME
+          value: Joseba
+        - name: ADMIN_MAIL
+          value: josebamail
+        ports:
+        - containerPort: 80
+          hostPort: 8080
+        volumeMounts:
+        - mountPath: /etc/nginx/nginx.conf
+          name: nginx-waf_nginx-conf
+          readOnly: true
+      volumes:
+      - hostPath:
+          path: ./nginx.conf
+          type: File
+        name: nginx-waf_nginx-conf
+

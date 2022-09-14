@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-waf
+spec:
+ containers:
+ - name: nginx-waf
+   image: docker.io/nginx
+   # image: quay.io/podman/stable
+   # args:
+   #  - sleep
+   #  - "1000000"
+   ports:
+   - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-waf
+  labels:
+    app: nginx-waf
+spec:
+  type: NodePort #Exposes the service as a node ports
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-waf
