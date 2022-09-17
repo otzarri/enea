@@ -10,6 +10,7 @@
     state: present
     update_cache: yes
 
-# - name: "Create podman network: production"
-#   containers.podman.podman_network:
-#     name: prod
+- name: "Create podman network: production"
+  containers.podman.podman_network:
+    name: prod
+  become: true

@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-waf
+  labels:
+    app: nginx-waf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-waf
+  template:
+    metadata:
+      labels:
+        app: nginx-waf
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: nginx-waf
+        image: docker.io/library/nginx:latest
+        # args:
+        # - ls
+        # - -la
+        env:
+        - name: ADMIN_NAME
+          value: Joseba
+        - name: ADMIN_MAIL
+          value: josebamail
+        ports:
+        - containerPort: 80
+          hostPort: 8080
+        volumeMounts:
+        - name: nginx-waf_nginx-conf-file-host
+          mountPath: /etc/nginx/nginx.conf
+          readOnly: true
+        - name: nginx-waf_nginx-conf-dir-pvc
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: nginx-waf_html-pvc
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+      volumes:
+      - name: nginx-waf_nginx-conf-file-host
+        hostPath:
+          path: ./deployments/nginx-waf/volumes/nginx-waf_nginx-conf-file-host/nginx.conf
+          type: File
+      - name: nginx-waf_nginx-conf-dir-pvc
+        persistentVolumeClaim:
+          claimName: nginx-waf_nginx-conf-d
+      - name: nginx-waf_html-pvc
+        persistentVolumeClaim:
+          claimName: nginx-waf_html
