@@ -5,6 +5,7 @@
   gather_facts: no
   become: no
   roles:
-  - role: app-manager/app/deploy
+  - role: app-manager
     vars:
       app_name: nginx-waf
+      app_src: "{{ playbook_dir }}/../deployments/nginx-waf"

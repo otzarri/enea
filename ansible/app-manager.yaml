@@ -1,10 +1,11 @@
 ---
 
-- name: Deploy WAF
+- name: Deploy app
   hosts: oci_host
   gather_facts: no
   become: no
   roles:
   - role: app-manager/app/deploy
     vars:
-      app_name: nginx-waf
+      app_name: "{{ app }}"
+

@@ -1,0 +1,44 @@
+###############################################
+#  Role: app-manager/pod/recreate             #
+#  Removes a pod and recreates it             #
+#                                             #
+#  Arguments:                                 #
+#    - pod_name: Name of the pod to recreate  #
+#    - kube_file: Path of the kube file       #
+###############################################
+---
+
+- debug:
+    msg:
+      - "Recreate pod"
+      - "Pod name: {{ pod_name }}"
+      - "Kube file (localhost): {{ kube_file }}"
+
+- name: Create temporary directory in the OCI host
+  ansible.builtin.tempfile:
+    state: directory
+  register: tmp_dir
+
+- name: Copy the kube file to the OCI host
+  ansible.builtin.copy:
+    src: "{{ kube_file }}"
+    dest: "{{ tmp_dir.path }}/kube-file.yaml"
+    remote_src: no
+    validate: /usr/bin/ls %s
+
+- name: Remove pod
+  containers.podman.podman_pod:
+    name: "{{ pod_name }}"
+    state: absent
+
+- name: Deploy pod
+  containers.podman.podman_play:
+    kube_file: "{{ tmp_dir.path }}/kube-file.yaml"
+    network: production
+    recreate: true
+    state: started
+
+- name: Remove the temporary directory and the kube file
+  file:
+    path: "{{ tmp_dir.path }}"
+    state: absent

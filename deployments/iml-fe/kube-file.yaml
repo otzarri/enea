@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iml-fe
+  labels:
+    app: iml-fe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iml-fe
+  template:
+    metadata:
+      labels:
+        app: iml-fe
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: iml-fe
+        image: docker.io/library/nginx:latest
+        # args:
+        # - ls
+        # - -la
+        env:
+        - name: ADMIN_NAME
+          value: Joseba
+        - name: ADMIN_MAIL
+          value: josebamail
+        ports:
+        - containerPort: 80
+          hostPort: 9090
+        volumeMounts:
+        - name: iml-fe_html-pvc
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+      volumes:
+      - name: iml-fe_html-pvc
+        persistentVolumeClaim:
+          claimName: iml-fe_html

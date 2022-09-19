@@ -47,7 +47,7 @@ spec:
           type: File
       - name: nginx-waf_nginx-conf-dir-pvc
         persistentVolumeClaim:
-          claimName: nginx-waf_nginx-conf-d
+          claimName: nginx-waf_nginx-conf-dir
       - name: nginx-waf_html-pvc
         persistentVolumeClaim:
           claimName: nginx-waf_html

@@ -1,0 +1,18 @@
+######################################
+#  Role: app-manager/volume/create   #
+#  Creates named volumes             #
+#                                    #
+#  Arguments:                        #
+#    - name: Name for the new volume #
+######################################
+---
+
+- debug:
+    msg:
+      - "Create named volume"
+      - "Volume name: {{ name }}"
+
+- name: Create named volume
+  containers.podman.podman_volume:
+    name: "{{ name }}"
+    state: present

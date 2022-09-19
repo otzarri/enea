@@ -47,30 +47,43 @@ def main():
         vol_path_oci = os.path.join('./deployments', app_name, 'volumes', volume['name'])
 
         if 'hostPath' in volume.keys():
+            vol_name = mount['name']
             vol_type = 'bind'
-            vol_action = 'ignore'
-            if 'type' in volume['hostPath'].keys() and volume['hostPath']['type'].lower() == "file":
-                vol_file = volume['hostPath']['path'].split(vol_path_oci)[1].strip('/')
-                vol_path_local = os.path.join(vol_path_local, vol_file)
-                vol_path_oci = os.path.join(vol_path_oci, vol_file)
+            vol_copy = True
+            if 'type' in volume['hostPath'].keys():
+                if volume['hostPath']['type'].lower() == "file":
+                    vol_file = volume['hostPath']['path'].split(vol_path_oci)[1].strip('/')
+                    vol_path_local = os.path.join(vol_path_local, vol_file)
+                    vol_path_oci = os.path.join(vol_path_oci, vol_file)
+                if volume['hostPath']['type'].lower() == "directory":
+                    # Adding slash for ansible.builtin.copy module
+                    vol_path_local = vol_path_local + '/'
         elif 'persistentVolumeClaim' in volume.keys():
+            vol_name = volume['persistentVolumeClaim']['claimName']
             vol_type = 'named'
+            vol_copy = False
+            # Adding slash for ansible.builtin.copy module
+            vol_path_local = vol_path_local + '/'
+
+            # Counting directory items excluding .keep file
+            item_num = 0
             if os.path.exists(vol_path_local):
-                if len(os.listdir(vol_path_local)) > 0:
-                    vol_action = 'create_and_copy'
-                else:
-                    vol_action = 'create_empty'
-            else:
-                vol_action = 'ignore'
+              for item in os.listdir(vol_path_local):
+                if item != '.keep':
+                    item_num += 1
+
+            # If directory not empty copy content
+              if item_num > 0:
+                vol_copy = True
         else:
             raise Exception('Only "hostPath" and "persistentVolumeClaim" volume types are supported.')
 
         response.append({
-            "name": mount['name'],
+            "name": vol_name,
             "type": vol_type,
             "src": vol_path_local,
             "dst": vol_path_oci,
-            "action": vol_action
+            "copy": vol_copy
         })
 
     result['volumes'] = response
