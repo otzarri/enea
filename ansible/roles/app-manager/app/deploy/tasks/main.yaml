@@ -1,21 +1,39 @@
-#############################################
-#  Role: app-manager/app/deploy             #
-#  Arguments:                               #
-#    - app_name: Name of the app to deploy  #
-#############################################
+####################################################
+#  Role: app-manager/app/deploy                    #
+#  Deploys apps                                    #
+#                                                  #
+#  Arguments:                                      #
+#    - app_name: Name of the app to deploy         #
+#    - web: If "open" enables access via nginx-waf #
+####################################################
 ---
+
+- debug:
+    msg:
+      - "Start app deployment process"
+      - "App name: {{ app_name }}"
 
 - name: Calculate app source path
   set_fact:
     app_src: "{{ playbook_dir }}/../deployments/{{ app_name }}"
 
-- name: Getting volume info from the kube file
+# TODO: Check if app_src directory exists, stop if not
+#
+# TODO: Check if app is already deployed, stop if yes
+#         - Pods
+#         - Volumes
+#         - Bind mounts
+#         - Files in the OCI host
+#
+# TODO: Design data object based on previous TODOs.
+
+- name: Parse kube file
   delegate_to: localhost
   kube_file_info:
-    kube_file: "{{ playbook_dir }}/../deployments/{{ app_name }}/kube-file.yaml"
+    kube_file: "{{ app_src }}/kube-file.yaml"
   register: kube
 
-- name: Create volumes
+- name: Call role app-manager/volume/create
   ansible.builtin.include_role:
     name: app-manager/volume/create
   vars:
@@ -23,7 +41,7 @@
   when: item.type == 'named'
   loop: "{{ kube.volumes }}"
 
-- name: "Copy content to volume: {{ item.name }}"
+- name: Call role app-manager/volume/copy
   ansible.builtin.include_role:
     name: app-manager/volume/copy
   vars:
@@ -34,60 +52,18 @@
   when: item.copy
   loop: "{{ kube.volumes }}"
 
-- name: Calculate kube file paths
-  set_fact:
-    kube_file_src: "{{ app_src }}/kube-file.yaml"
-    kube_file_dst: "{{ dpl_base }}/{{ app_name }}/kube-file.yaml"
+- name: Call role app-manager/pod/create
+  ansible.builtin.include_role:
+    name: app-manager/pod/create
+  vars:
+    kube_file: "{{ app_src }}/kube-file.yaml"
 
-- debug:
-    msg:
-      - "Copy kube file"
-      - "File source (localhost): {{ kube_file_src }}"
-      - "File destination (OCI host): {{ kube_file_dst }}"
-
-- name: Copy the kube file to the OCI host
-  ansible.builtin.copy:
-    src: "{{ kube_file_src }}"
-    dest: "{{ kube_file_dst }}"
-    remote_src: no
-    validate: /usr/bin/ls %s
-
-- debug:
-    msg:
-      - "Deploy app"
-      - "App name: {{ app_name }}"
-
-- name: Deploy app
-  containers.podman.podman_play:
-    kube_file: "{{ kube_file_dst }}"
-    network: production
-    recreate: true
-    state: started
-
-- block:
-
-  - name: Open web access
-    ansible.builtin.include_role:
-      name: app-manager/volume/copy
-    vars:
-      name: "nginx-waf_nginx-conf-dir"
-      type: "named"
-      src: "{{ app_src }}/conf/nginx-waf/"
-      dst: "./deployments/iml-fe/conf/nginx-waf"
-
-  - name: Recreate app nginx-waf-pod-0
-    ansible.builtin.include_role:
-      name: app-manager/pod/recreate
-    vars:
-      pod_name: "nginx-waf-pod-0"
-      kube_file: "{{ playbook_dir }}/../deployments/nginx-waf/kube-file.yaml"
-
+- name: Call role app-manager/app/web/open
+  ansible.builtin.include_role:
+    name: app-manager/app/web/open
+  vars:
+    app_name: iml-fe
   when:
     - web is defined
     - web == "open"
-
-- name: Remove the kube file
-  file:
-    state: absent
-    path: "{{ kube_file_dst }}"
 

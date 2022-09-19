@@ -1,0 +1,37 @@
+###############################################
+#  Role: app-manager/pod/create               #
+#  Created a pod from a kube file             #
+#                                             #
+#  Arguments:                                 #
+#    - kube_file: Path of the kube file       #
+###############################################
+---
+
+- debug:
+    msg:
+      - "Create pod"
+      - "Kube file (localhost): {{ kube_file }}"
+
+- name: Create temporary directory in the OCI host
+  ansible.builtin.tempfile:
+    state: directory
+  register: tmp_dir
+
+- name: Copy the kube file to the OCI host's temporary directory
+  ansible.builtin.copy:
+    src: "{{ kube_file }}"
+    dest: "{{ tmp_dir.path }}/kube-file.yaml"
+    remote_src: no
+    validate: /usr/bin/ls %s
+
+- name: Create pod from kube file
+  containers.podman.podman_play:
+    kube_file: "{{ tmp_dir.path }}/kube-file.yaml"
+    network: production
+    recreate: true
+    state: started
+
+- name: Remove the temporary directory in the OCI host 
+  file:
+    path: "{{ tmp_dir.path }}"
+    state: absent
