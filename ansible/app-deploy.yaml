@@ -1,0 +1,27 @@
+####################################################
+#                                                  #
+#  Playbook: app-deploy.                           #
+#                                                  #
+#  Deploy an app.                                  #
+#                                                  #
+#  Arguments:                                      #
+#  - app_name: Name of the app to deploy.          #
+#  - web: If "open" enables access via nginx-waf.  #
+#                                                  #
+####################################################
+
+---
+
+- name: "Run playbook: app-deploy"
+  hosts: oci_host
+  gather_facts: no
+  become: no
+  collections:
+    - otzarri.podchestra
+  roles:
+  - role: app/deploy
+    vars:
+      app_name: "{{ app }}"
+      app_src: "{{ playbook_dir }}/../deployments/{{ app_name }}"
+      web: "{{ web | default('closed') }}"
+

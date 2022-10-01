@@ -1,0 +1,39 @@
+---
+
+- name: Run role
+  hosts: oci_host
+  gather_facts: no
+  become: no
+  collections:
+    - otzarri.podchestra
+  tasks:
+  - name: "Call role: network/create"
+    ansible.builtin.include_role:
+      name: network/create
+    vars:
+      name: "net-01"
+  - name: "Call role: network/inspect"
+    ansible.builtin.include_role:
+      name: network/inspect
+    vars:
+      name: "net-01"
+  - name: "Call role: network/remove"
+    ansible.builtin.include_role:
+      name: network/remove
+    vars:
+      name: "net-01"
+  - name: "Call role: network/inspect"
+    ansible.builtin.include_role:
+      name: network/inspect
+    vars:
+      name: "net-01"
+
+# - name: Create pod
+  # hosts: oci_host
+  # gather_facts: no
+  # become: no
+  # roles:
+  # - role: app/deploy
+  #   vars:
+#       app_name: "{{ app }}"
+
