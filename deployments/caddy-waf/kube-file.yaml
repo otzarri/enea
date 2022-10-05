@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caddy-waf
+  labels:
+    app: caddy-waf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caddy-waf
+  template:
+    metadata:
+      labels:
+        app: caddy-waf
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: caddy-waf
+        image: docker.io/otzarri/caddy-coraza:2.6.1-crs-3.3.4
+        # args:
+        # - ls
+        # - -la
+        env:
+        - name: ADMIN_NAME
+          value: Joseba
+        - name: ADMIN_MAIL
+          value: josebamail
+        ports:
+        - containerPort: 80
+          hostPort: 8080
+        - containerPort: 443
+          hostPort: 8443
+        volumeMounts:
+        - name: caddy-waf_etc-caddy-pvc
+          mountPath: /etc/caddy
+          readOnly: true
+      volumes:
+      - name: caddy-waf_etc-caddy-pvc
+        persistentVolumeClaim:
+          claimName: caddy-waf_etc-caddy
+

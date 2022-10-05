@@ -4,11 +4,30 @@
   hostname:
     name: izaro
 
-- name: "Update apt package index"
-  apt:
-    update_cache: true
-
 - name: "Update installed apt packages"
   apt:
-    update_cache: false
+    update_cache: true
     upgrade: full
+
+- name: Install security tools
+  apt:
+    pkg:
+      - fail2ban
+      - firewalld
+    state: present
+
+- name: Redirect port 80 to 8080 with Rich Rule
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 forward-port port=80 protocol=tcp to-port=8080
+    zone: public
+    permanent: no
+    immediate: yes
+    state: enabled
+
+- name: Redirect port 443 to 8443 with Rich Rule
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 forward-port port=443 protocol=tcp to-port=8443
+    zone: public
+    permanent: no
+    immediate: yes
+    state: enabled

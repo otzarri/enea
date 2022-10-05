@@ -1,0 +1,9 @@
+{
+    order coraza_waf first
+    email joseba@otzarri.net
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+    # auto_https off
+    debug
+}
+
+import /etc/caddy/sites/*.caddy

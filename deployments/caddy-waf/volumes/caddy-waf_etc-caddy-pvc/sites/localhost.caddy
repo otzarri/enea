@@ -1,0 +1,8 @@
+localhost {
+	coraza_waf {
+		include /etc/coraza.conf
+		include /usr/local/share/coreruleset/crs-setup.conf
+		include /usr/local/share/coreruleset/rules/*.conf
+	}
+    respond 200
+}

@@ -1,0 +1,9 @@
+iml.otzarri.net {
+        coraza_waf {
+                include /etc/coraza.conf
+                include /usr/local/share/coreruleset/crs-setup.conf
+                include /usr/local/share/coreruleset/rules/*.conf
+        }
+        tls internal
+        reverse_proxy http://iml-fe-pod-0
+}
