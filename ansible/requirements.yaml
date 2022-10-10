@@ -2,4 +2,5 @@
 # Install them with the command below:
 #     $ ansible-galaxy install -r requirements.yml
 collections:
-  - name: containers.podman
+  - name: collection.docker
+  - name: otzarri.podchestra

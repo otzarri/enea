@@ -1,9 +1,9 @@
-- name: Setup Ansible controller
-  hosts: localhost
-  gather_facts: no
-  become: no
-  roles:
-  - role: ansible/setup-controller
+# - name: Setup Ansible controller
+  # hosts: localhost
+  # gather_facts: no
+  # become: no
+  # roles:
+#   - role: ansible/setup-controller
 
 - name: Setup OS for OCI host
   hosts: oci_host
@@ -14,7 +14,7 @@
 
 - name: OCI engine deployment
   hosts: oci_host
-  gather_facts: no
+  gather_facts: yes
   become: yes
   roles:
   - role: oci-engine/setup-oci-host
