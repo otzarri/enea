@@ -4,10 +4,12 @@ services:
   ingress:
     image: docker.io/otzarri/caddy-coraza:2.6.1-crs-3.3.4
     volumes:
-      - caddy-coraza_etc-caddy:/etc/caddy
+      - caddy-waf_etc-caddy:/etc/caddy
     restart: always
     ports:
       - 8080:80
       - 8443:443
 volumes:
-  caddy-coraza_etc-caddy:
+  caddy-waf_etc-caddy:
+  caddy-waf_var-www:
+  caddy-waf_non-existing:
